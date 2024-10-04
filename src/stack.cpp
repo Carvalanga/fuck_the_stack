@@ -41,12 +41,6 @@ STACK_ERROR stack_ctor(STACK* stack, size_t size ON_DEBUG(, const char* name, co
     STACK_ASSERT(stack);
 
     return STACK_NO_ERROR;
-
-    else {
-        log_write("!!!! ERROR: STACK IS NULL --- %s !!!!", __func__);
-        fprintf(stderr, "!!!! ERROR: STACK IS NULL --- %s !!!!", __func__);
-        return STACK_IS_NULL;
-    }
 }
 
 STACK_ERROR stack_dtor(STACK* stack) {
@@ -94,7 +88,7 @@ void stack_dump(STACK* stack) {
             log_write("\n---STACK_DATA---");
 
             for (size_t i = 0; i < stack->data_size; i++) {
-                log_write("\t# %3d = %7x --- [%p]", i, stack->data[i], stack->data + i);
+                log_write("\t# %3d = %lx --- [%p]", i, stack->data[i], stack->data + i);
             }
 
             log_write("### END OF INFORMATION ABOUT THE STACK ###\n");
@@ -220,7 +214,7 @@ STACK_ERROR stack_verify(STACK* stack) {
                 return STACK_BROKEN;
         }
         if (stack->hash_main != calc_hash_with_ignore((char*)stack, sizeof(STACK), (char*)(&stack->hash_main), sizeof(stack->hash_main)) ||
-            stack->hash_data != calc_hash((char*)stack->data, stack->data_size)) {
+            stack->hash_data != calc_hash((char*)stack->data, stack->data_size-1)) {
             stack->error = STACK_BROKEN;
                 fprintf(stderr, "!!!! ERROR: STACK BROKEN IN HASH --- %s:%d !!!!", CALL_FROM);
                 log_write("!!!! ERROR: STACK BROKEN IN HASH %s:%d !!!!", CALL_FROM);
@@ -283,7 +277,7 @@ static void stack_fill_poison(STACK* stack) {
 
 static void stack_recalc_hash(STACK* stack) {
 
-    stack->hash_data = calc_hash((char*)stack->data, stack->data_size);
+    stack->hash_data = calc_hash((char*)stack->data, stack->data_size-1);
     stack->hash_main = calc_hash_with_ignore((char*)stack, sizeof(STACK), (char*)(&stack->hash_main), sizeof(stack->hash_main));
 }
 #endif
